@@ -34,29 +34,29 @@ public class SaveStockServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // Sanitize user input to remove HTML tags and JavaScript.
-
+    // Scrapes Cryptocurrency data
     Document doc = Jsoup.connect("https://coinmarketcap.com/").get();
-    String websitedata = doc.html(); // prints HTML data
-    System.out.println("✔️GOT HTML PAGE");
+    String websiteData = doc.html(); 
 
     Elements tik = doc.select(".coin-item-symbol");
     Elements price = doc.select(".price___3rj7O ");
-    System.out.println("✔️GOT ALL TICKER SYMBOLS IN PAGE");
-    System.out.println("✔️GOT ALL PRICES IN PAGE");
 
-    long timestamp = System.currentTimeMillis();
+    long timeStamp = System.currentTimeMillis();
 
     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
     KeyFactory keyFactory = datastore.newKeyFactory().setKind("Stock");
+
     for (int i = 0; i < tik.size(); i++) {
+
       String tikk = tik.get(i).text();
-      String pricee = price.get(i).text();
+      String pricee = price.get(i).text().replaceAll("[\\\\$,]", "");
+      double priceDouble = Double.parseDouble(pricee);
+
       FullEntity taskEntity =
           Entity.newBuilder(keyFactory.newKey())
               .set("Tik", tikk)
-              .set("Price", pricee)
-              .set("timestamp", timestamp)
+              .set("TimeStamp", timeStamp)
+              .set("USD", priceDouble)
               .build();
       datastore.put(taskEntity);
     }
