@@ -32,19 +32,20 @@ import org.jsoup.select.Elements;
 // Get the urls of the latest deiscussion sections from reddit wallstreet bets
 @WebServlet("/store-comments-urls")
 public class CommentsUrl extends HttpServlet {
+  public static String REDDIT_DISCUSSION_URL =
+      "https://www.reddit.com/r/wallstreetbets/search?q=flair_name%3A%22Daily%20Discussion%22&restrict_sr=1&sort=new";
+  public static String DAILY_DISCUSSION_CLASS_TAG = "_1poyrkZ7g36PawDueRza";
+
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
     Datastore dataStore = DatastoreOptions.getDefaultInstance().getService();
     KeyFactory keyFactory = dataStore.newKeyFactory().setKind("Comments-url");
 
-    final String REDDIT_DISCUSSION_URL =
-        "https://www.reddit.com/r/wallstreetbets/search?q=flair_name%3A%22Daily%20Discussion%22&restrict_sr=1&sort=new";
     Document redditPage = Jsoup.connect(REDDIT_DISCUSSION_URL).get();
     System.out.printf("Successfully scraped Reddit Page: %s", redditPage.title());
 
     // Get the links for the daily discussion
-    final String DAILY_DISCUSSION_CLASS_TAG = "_1poyrkZ7g36PawDueRza";
     Elements dailyDiscussion = redditPage.getElementsByClass(DAILY_DISCUSSION_CLASS_TAG);
     Elements links = dailyDiscussion.select("a[href]");
 

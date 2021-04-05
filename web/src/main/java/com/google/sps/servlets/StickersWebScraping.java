@@ -34,13 +34,17 @@ import org.jsoup.select.Elements;
 @WebServlet("/store-stickers")
 public class StickersWebScraping extends HttpServlet {
   private List<String> stockStickers = new ArrayList<String>();
+  public static String stocksWebPage;
+  public static String nasdaqStocks;
+  public static String QUOTES_TAG = "quotes";
+  public static String STICKERS_GROUP1_TAG = "ro";
+  public static String STICKERS_GROUP2_TAG = "re";
+  public static String STICKER_TAG = "a";
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
     // Get all stock stickers listed in NYSE and NASDAQ, divided by alphabetical order
-    String stocksWebPage;
-    String nasdaqStocks;
     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
     KeyFactory keyFactory = datastore.newKeyFactory().setKind("Stickers");
 
@@ -51,7 +55,7 @@ public class StickersWebScraping extends HttpServlet {
       Document docNyse = Jsoup.connect(stocksWebPage).get();
       Document docNasdaq = Jsoup.connect(nasdaqStocks).get();
 
-      final String QUOTES_TAG = "quotes";
+      // final String QUOTES_TAG = "quotes";
       Elements stocksNyse = docNyse.getElementsByClass(QUOTES_TAG);
       Elements stocksNasdaq = docNasdaq.getElementsByClass(QUOTES_TAG);
 
@@ -66,9 +70,6 @@ public class StickersWebScraping extends HttpServlet {
   }
 
   public void addStickers(Elements stocks) {
-    final String STICKERS_GROUP1_TAG = "ro";
-    final String STICKERS_GROUP2_TAG = "re";
-    final String STICKER_TAG = "a";
     for (Element stock : stocks) {
       Elements stockGeneralInfo1 = stock.getElementsByClass(STICKERS_GROUP1_TAG);
       Elements stockGeneralInfo2 = stock.getElementsByClass(STICKERS_GROUP2_TAG);

@@ -34,6 +34,9 @@ import org.jsoup.select.Elements;
 
 @WebServlet("/store-comments")
 public class RedditComment extends HttpServlet {
+  public static String DISCUSSION_TAG = "_3cjCphgls6DH-irkVaA0GM";
+  public static String COMMENTS_TAG = "_1qeIAgB0cPwnLhDF9XSiJM";
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
@@ -46,9 +49,6 @@ public class RedditComment extends HttpServlet {
     QueryResults<Entity> savedUrls = datastore.run(query);
 
     KeyFactory keyFactory = datastore.newKeyFactory().setKind("Comments");
-
-    final String DISCUSSION_TAG = "_3cjCphgls6DH-irkVaA0GM";
-    final String COMMENTS_TAG = "_1qeIAgB0cPwnLhDF9XSiJM";
 
     while (savedUrls.hasNext()) {
       Entity entity = savedUrls.next();
