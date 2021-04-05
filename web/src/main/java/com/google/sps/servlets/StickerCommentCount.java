@@ -34,8 +34,9 @@ public class StickerCommentCount extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     List<String> listStickers = new ArrayList<String>();
     List<String> listComments = new ArrayList<String>();
-    List<String> rankingStocks =
-        new ArrayList<String>(); // List containig the stickers that appear on the comments
+
+    // List containig the stickers that appear on the comments
+    List<String> rankingStocks = new ArrayList<String>();
     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
 
     // Get stickers
@@ -50,6 +51,7 @@ public class StickerCommentCount extends HttpServlet {
       String stock = entity.getString("sticker");
       listStickers.add(stock);
     }
+    System.out.println("Number of stickers loaded: " + listStickers.size());
 
     // Get comments
     Query<Entity> queryComments =
@@ -63,17 +65,16 @@ public class StickerCommentCount extends HttpServlet {
       String comment = entity.getString("comment");
       listComments.add(comment);
     }
+    System.out.println("Number of comments loaded: " + listComments.size());
 
     // Reads and stores the stickers that appear on the comments
-    for (int index = 0; index < listComments.size(); index++) {
-      String comment = listComments.get(index).trim();
+    for (int commentsIndex = 0; commentsIndex < listComments.size(); commentsIndex++) {
+      String comment = listComments.get(commentsIndex).trim();
       String[] commentWords = comment.split(" ");
-      for (int j = 0; j < commentWords.length; j++) {
-        String currWord = commentWords[j].trim();
-        System.out.println(currWord);
-        for (int i = 0; i < listStickers.size(); i++) {
-
-          String currSticker = listStickers.get(i);
+      for (int wordIndex = 0; wordIndex < commentWords.length; wordIndex++) {
+        String currWord = commentWords[wordIndex].trim();
+        for (int stikcerIndex = 0; stikcerIndex < listStickers.size(); stikcerIndex++) {
+          String currSticker = listStickers.get(stikcerIndex);
           if (currWord.toLowerCase().equals(currSticker.toLowerCase())) {
             rankingStocks.add(currSticker);
           }

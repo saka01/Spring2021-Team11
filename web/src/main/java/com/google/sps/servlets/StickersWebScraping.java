@@ -51,8 +51,9 @@ public class StickersWebScraping extends HttpServlet {
       Document docNyse = Jsoup.connect(stocksWebPage).get();
       Document docNasdaq = Jsoup.connect(nasdaqStocks).get();
 
-      Elements stocksNyse = docNyse.getElementsByClass("quotes");
-      Elements stocksNasdaq = docNasdaq.getElementsByClass("quotes");
+      final String QUOTES_TAG = "quotes";
+      Elements stocksNyse = docNyse.getElementsByClass(QUOTES_TAG);
+      Elements stocksNasdaq = docNasdaq.getElementsByClass(QUOTES_TAG);
 
       addStickers(stocksNyse);
       addStickers(stocksNasdaq);
@@ -65,18 +66,21 @@ public class StickersWebScraping extends HttpServlet {
   }
 
   public void addStickers(Elements stocks) {
+    final String STICKERS_GROUP1_TAG = "ro";
+    final String STICKERS_GROUP2_TAG = "re";
+    final String STICKER_TAG = "a";
     for (Element stock : stocks) {
-      Elements StockGeneralInfo1 = stock.getElementsByClass("ro");
-      Elements StockGeneralInfo2 = stock.getElementsByClass("re");
-      for (Element sticker : StockGeneralInfo1) {
-        String sticker1 = sticker.select("a").text();
+      Elements stockGeneralInfo1 = stock.getElementsByClass(STICKERS_GROUP1_TAG);
+      Elements stockGeneralInfo2 = stock.getElementsByClass(STICKERS_GROUP2_TAG);
+      for (Element sticker : stockGeneralInfo1) {
+        String sticker1 = sticker.select(STICKER_TAG).text();
         sticker1 = sticker1.trim();
         if (!stockStickers.contains(sticker1)) {
           stockStickers.add(sticker1);
         }
       }
-      for (Element sticker : StockGeneralInfo2) {
-        String sticker2 = sticker.select("a").text();
+      for (Element sticker : stockGeneralInfo2) {
+        String sticker2 = sticker.select(STICKER_TAG).text();
         sticker2 = sticker2.trim();
         if (!stockStickers.contains(sticker2)) {
           stockStickers.add(sticker2);

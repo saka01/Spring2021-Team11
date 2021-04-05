@@ -35,16 +35,17 @@ public class CommentsUrl extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-    Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
-    KeyFactory keyFactory = datastore.newKeyFactory().setKind("Comments-url");
+    Datastore dataStore = DatastoreOptions.getDefaultInstance().getService();
+    KeyFactory keyFactory = dataStore.newKeyFactory().setKind("Comments-url");
 
-    String Reddit =
+    final String REDDIT_DISCUSSION_URL =
         "https://www.reddit.com/r/wallstreetbets/search?q=flair_name%3A%22Daily%20Discussion%22&restrict_sr=1&sort=new";
-    Document redditPage = Jsoup.connect(Reddit).get();
-    System.out.printf("Title: %s\n", redditPage.title());
+    Document redditPage = Jsoup.connect(REDDIT_DISCUSSION_URL).get();
+    System.out.printf("Successfully scraped Reddit Page: %s", redditPage.title());
 
     // Get the links for the daily discussion
-    Elements dailyDiscussion = redditPage.getElementsByClass("_1poyrkZ7g36PawDueRza-J");
+    final String DAILY_DISCUSSION_CLASS_TAG = "_1poyrkZ7g36PawDueRza";
+    Elements dailyDiscussion = redditPage.getElementsByClass(DAILY_DISCUSSION_CLASS_TAG);
     Elements links = dailyDiscussion.select("a[href]");
 
     int urlCount = 0;
@@ -55,7 +56,7 @@ public class CommentsUrl extends HttpServlet {
       // Every three url's we have a url for the daily discussions.
       if (urlCount == 2 || urlCount == urlCurrIndex + 3) {
         FullEntity commentsUrls = Entity.newBuilder(keyFactory.newKey()).set("url", url).build();
-        datastore.put(commentsUrls);
+        dataStore.put(commentsUrls);
         urlCurrIndex = urlCount;
       }
       urlCount++;

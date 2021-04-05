@@ -47,25 +47,28 @@ public class RedditComment extends HttpServlet {
 
     KeyFactory keyFactory = datastore.newKeyFactory().setKind("Comments");
 
+    final String DISCUSSION_TAG = "_3cjCphgls6DH-irkVaA0GM";
+    final String COMMENTS_TAG = "_1qeIAgB0cPwnLhDF9XSiJM";
+
     while (savedUrls.hasNext()) {
       Entity entity = savedUrls.next();
       String url = entity.getString("url");
 
       try {
-        Document RedditDiscussions = Jsoup.connect(url).get();
+        Document redditDiscussions = Jsoup.connect(url).get();
 
-        System.out.printf("\nTitle: %s\n", RedditDiscussions.title());
+        System.out.printf("\nSuccessfully scraped Reddit Page: %s", redditDiscussions.title());
 
-        Elements commentSection = RedditDiscussions.getElementsByClass("_3cjCphgls6DH-irkVaA0GM");
+        Elements commentSection = redditDiscussions.getElementsByClass(DISCUSSION_TAG);
 
         for (Element comments : commentSection) {
-          String comment = comments.getElementsByClass("_1qeIAgB0cPwnLhDF9XSiJM").text();
-          FullEntity RedditComment =
+          String comment = comments.getElementsByClass(COMMENTS_TAG).text();
+          FullEntity redditComment =
               Entity.newBuilder(keyFactory.newKey()).set("comment", comment).build();
-          datastore.put(RedditComment);
+          datastore.put(redditComment);
         }
       } catch (Exception e) {
-        System.out.println("error loading url");
+        System.out.printf("%s: Failed to load url: %s", getClass().getName(), url);
       }
     }
   }
