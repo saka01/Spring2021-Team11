@@ -17,6 +17,8 @@ package com.google.sps.servlets;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.FullEntity;
+import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
@@ -36,7 +38,7 @@ public class StickerCommentCount extends HttpServlet {
     List<String> listComments = new ArrayList<String>();
 
     // List containig the stickers that appear on the comments
-    List<String> rankingStocks = new ArrayList<String>();
+    List<String> stockMentioned = new ArrayList<String>();
     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
 
     // Get stickers
@@ -76,10 +78,16 @@ public class StickerCommentCount extends HttpServlet {
         for (int stikcerIndex = 0; stikcerIndex < listStickers.size(); stikcerIndex++) {
           String currSticker = listStickers.get(stikcerIndex);
           if (currWord.toLowerCase().equals(currSticker.toLowerCase())) {
-            rankingStocks.add(currSticker);
+            stockMentioned.add(currSticker);
           }
         }
       }
+    }
+    KeyFactory keyFactory = datastore.newKeyFactory().setKind("Stocks-mentioned");
+    for (String stock : stockMentioned) {
+      FullEntity mentionedStocks =
+          Entity.newBuilder(keyFactory.newKey()).set("stock", stock).build();
+      datastore.put(mentionedStocks);
     }
   }
 }
