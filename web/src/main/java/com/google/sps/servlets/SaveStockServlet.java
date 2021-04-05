@@ -17,9 +17,11 @@ package com.google.sps.servlets;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.Entity;
-import com.google.cloud.datastore.FullEntity;
+import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -36,9 +38,9 @@ public class SaveStockServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Scrapes Cryptocurrency data
     Document doc = Jsoup.connect("https://coinmarketcap.com/").get();
-    String websiteData = doc.html(); 
+    String websiteData = doc.html();
 
-    Elements tik = doc.select(".coin-item-symbol");
+    Elements tick = doc.select(".coin-item-symbol");
     Elements price = doc.select(".price___3rj7O ");
 
     long timeStamp = System.currentTimeMillis();
@@ -46,17 +48,33 @@ public class SaveStockServlet extends HttpServlet {
     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
     KeyFactory keyFactory = datastore.newKeyFactory().setKind("Stock");
 
-    for (int i = 0; i < tik.size(); i++) {
+    ArrayList<String> tickers = new ArrayList<String>();
+    for (int i = 0; i < tick.size(); i++) {
+      String tik = tick.get(i).text();
+      tickers.add(tik);
+    }
 
-      String tikk = tik.get(i).text();
-      String pricee = price.get(i).text().replaceAll("[\\\\$,]", "");
-      double priceDouble = Double.parseDouble(pricee);
+    for (int i = 0; i < tick.size(); i++) {
 
-      FullEntity taskEntity =
-          Entity.newBuilder(keyFactory.newKey())
-              .set("Tik", tikk)
-              .set("TimeStamp", timeStamp)
+      Key tickerKey = datastore.newKeyFactory().setKind("Stock").newKey(tickers.get(i));
+
+      String tikPrice = price.get(i).text().replaceAll("[\\\\$,]", "");
+      Double priceDouble = Double.parseDouble(tikPrice);
+
+      String path =
+          "/home/msaka/Spring2021-Team11/web/src/main/java/com/google/sps/stockData/"
+              + tickers.get(i)
+              + ".txt";
+
+      FileWriter myWriter = new FileWriter(path, true);
+      myWriter.write(timeStamp + "," + priceDouble + "\n");
+      myWriter.close();
+
+      Entity taskEntity =
+          Entity.newBuilder(tickerKey)
+              .set("Ticker", tickers.get(i))
               .set("USD", priceDouble)
+              .set("TimeStamp", timeStamp)
               .build();
       datastore.put(taskEntity);
     }
