@@ -12,41 +12,113 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/** Fetches tasks from the server and adds them to the DOM. */
-function loadTasks() {
-  fetch('/list-tasks').then(response => response.json()).then((tasks) => {
-    const taskListElement = document.getElementById('task-list');
-    tasks.forEach((task) => {
-      taskListElement.appendChild(createTaskElement(task));
-    })
-  });
+
+function searchMe() {
+  var input, filter, stockList, stockListItem, item, txtValue;
+  input = document.getElementById('myInput');
+  filter = input.value.toUpperCase();
+  stockList = document.getElementById('stock-list');
+  stockListItem = stockList.getElementsByTagName('list');
+  for (var i = 0; i < stockListItem.length; i++) {
+    item = stockListItem[i];
+    txtValue = item.textContent || item.innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      stockListItem[i].style.display = '';
+    } else {
+      stockListItem[i].style.display = 'none';
+    }
+  }
 }
 
-/** Creates an element that represents a task, including its delete button. */
-function createTaskElement(task) {
-  const taskElement = document.createElement('li');
-  taskElement.className = 'task';
+function loadStocks() {
+
+  // Activates the doPost request at every refresh and open of page
+  fetch('/save-stock', {
+    method: 'POST',
+  });
+
+  // Populate the stocks
+  fetch('/list-stock')
+    .then((response) => response.json())
+    .then((stocks) => {
+      const stockListElement = document.getElementById('stock-list');
+      stocks.forEach((stock) => {
+        stockListElement.appendChild(createStockElement(stock));
+      });
+    });
+}
+
+/** Creates an element that represents a stock */
+function createStockElement(stock) {
+  const stockElement = document.createElement('list');
+  stockElement.className = 'task';
+
 
   const titleElement = document.createElement('span');
-  titleElement.innerText = task.title;
+  var ticker = stock.ticker;
 
-  const deleteButtonElement = document.createElement('button');
-  deleteButtonElement.innerText = 'Delete';
-  deleteButtonElement.addEventListener('click', () => {
-    deleteTask(task);
+  const tickLink = document.createElement('a');
+  tickLink.setAttribute('href', 'ticker.html');
+  tickLink.innerHTML = ticker;
 
-    // Remove the task from the DOM.
-    taskElement.remove();
-  });
+  const priceElement = document.createElement('span');
+  priceElement.innerText = '$' + stock.price;
 
-  taskElement.appendChild(titleElement);
-  taskElement.appendChild(deleteButtonElement);
-  return taskElement;
+  titleElement.appendChild(tickLink);
+  stockElement.appendChild(titleElement);
+  stockElement.appendChild(priceElement);
+  return stockElement;
 }
 
-/** Tells the server to delete the task. */
-function deleteTask(task) {
-  const params = new URLSearchParams();
-  params.append('id', task.id);
-  fetch('/delete-task', {method: 'POST', body: params});
+google.charts.load('current', { packages: ['corechart', 'line'] });
+google.charts.setOnLoadCallback(drawChart);
+
+/** Creates a chart and adds it to the page. */
+function drawChart() {
+  // Feeds graph random data
+  function myRand(to) {
+    var x = Math.floor(Math.random() * to + 1);
+    return x;
+  }
+
+  var my2d = [];
+  for (var i = 0; i < 70; i++) {
+    my2d[i] = [];
+    for (var j = 0; j < 2; j++) {
+      my2d[i][j] = i;
+    }
+  }
+
+  for (var i = 0; i < 70; i++) {
+    my2d[i][1] = myRand(50);
+  }
+
+  const data = new google.visualization.DataTable();
+
+  data.addColumn('number', 'Time');
+  data.addColumn('number', 'Price');
+
+  data.addRows(my2d);
+
+  const options = {
+    title: 'BTC',
+    width: 1500,
+    height: 500,
+
+    hAxis: {
+      title: 'Time',
+      logScale: false,
+    },
+    vAxis: {
+      title: 'Price',
+      logScale: false,
+      format: 'currency',
+    },
+    colors: ['#a52714', '#097138'],
+  };
+
+  const chart = new google.visualization.LineChart(
+    document.getElementById('curve_chart')
+  );
+  chart.draw(data, options);
 }
