@@ -30,11 +30,19 @@
   <input class="search" type="text" id="myInput" placeholder="Search for Tickers..." aria-label="Search through site content" onkeyup="searchMe()">
 </form>
 
+<form method="POST" action="/store-stickers">
+  <button>  Get NYSE and NASDAQ stickers </button>
+</form>
+<form method="POST" onclick="refresh()">
+  <button> Refresh </button>
+</form>
+
 <ul id="stock-list"></ul>
 
  <h1>Stock Data</h1>
     <hr />
     <div id="curve_chart"></div>
+
 
 </body>
 </html>
