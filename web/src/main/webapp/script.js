@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 function searchMe() {
   var input, filter, stockList, stockListItem, item, txtValue;
   input = document.getElementById('myInput');
@@ -30,10 +29,11 @@ function searchMe() {
   }
 }
 
+function loadGraph() {
+  fetch('/graph-data');
+}
 
 function loadStocks() {
-    
-
   // Activates the doPost request at every refresh and open of page
   fetch('/save-stock', {
     method: 'POST',
@@ -55,13 +55,12 @@ function createStockElement(stock) {
   const stockElement = document.createElement('list');
   stockElement.className = 'task';
 
-
   const titleElement = document.createElement('span');
   var ticker = stock.ticker;
 
   const tickLink = document.createElement('a');
-  tickLink.setAttribute('href', "ticker.html?symbol=" + ticker);
-  tickLink.setAttribute('name',ticker);
+  tickLink.setAttribute('href', 'ticker.html?symbol=' + ticker);
+  tickLink.setAttribute('name', ticker);
   tickLink.innerHTML = ticker;
 
   const priceElement = document.createElement('span');
@@ -112,13 +111,13 @@ function drawChart() {
     hAxis: {
       lable: 'Time',
       logScale: false,
-      gridlines:{count: 0}
+      gridlines: { count: 0 },
     },
     vAxis: {
       lable: 'Price',
       logScale: false,
       format: 'currency',
-      gridlines:{count: 0}
+      gridlines: { count: 0 },
     },
     colors: ['#00FF00'],
   };
