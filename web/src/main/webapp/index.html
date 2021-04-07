@@ -23,12 +23,13 @@
 
   </head>
 
-  <body onload="loadStocks()" >
-
-<br>
-<form role="search" id="form" class="searchTik">
+  <body onload="loadStocks()" > 
+    <div class="body-center" >
+<form role="search" id="form" class="searchTik search-bar">
   <input class="search" type="text" id="myInput" placeholder="Search for Tickers..." aria-label="Search through site content" onkeyup="searchMe()">
 </form>
+<br>
+
 
 <ul id="stock-list"></ul>
 
@@ -38,6 +39,7 @@
 <form method="POST" onclick="refresh()">
   <button> Refresh </button>
 </form>
+</div>
 
 </body>
 </html>
