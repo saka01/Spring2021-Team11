@@ -29,12 +29,7 @@
 
 .search:hover,
 .search:focus {
-  border: 1.5px solid #009688;
-  color: white;
-}
-
-input.search-query {
-  background-color: #f47443;
+  border: 1.5px solid white;
   color: white;
 }
 
