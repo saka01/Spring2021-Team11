@@ -22,8 +22,6 @@ import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
-import com.google.gson.Gson;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,43 +35,48 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-@WebServlet("/store-comments")
-public class RedditComment extends HttpServlet {
-  public static String DISCUSSION_TAG = "_3cjCphgls6DH-irkVaA0GM";
-  public static String COMMENTS_TAG = "_1qeIAgB0cPwnLhDF9XSiJM";
-
+@WebServlet("/sticker-count")
+public class StickerCount extends HttpServlet {
+  
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    List<String> listStickers = new ArrayList<String>();
+    List<String> repeatedStickers = new ArrayList<String>();
 
     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
     Query<Entity> query =
         Query.newEntityQueryBuilder()
-            .setKind("Comments-url")
-            .setOrderBy(OrderBy.desc("url"))
+            .setKind("Stocks-mentioned")
+            .setOrderBy(OrderBy.desc("stock"))
             .build();
-    QueryResults<Entity> savedUrls = datastore.run(query);
+    QueryResults<Entity> stockMention = datastore.run(query);
 
-    KeyFactory keyFactory = datastore.newKeyFactory().setKind("Comments");
+    KeyFactory keyFactory = datastore.newKeyFactory().setKind("Sticker-count");
 
-    while (savedUrls.hasNext()) {
-      Entity entity = savedUrls.next();
-      String url = entity.getString("url");
-    
-      try {
-        Document redditDiscussions = Jsoup.connect(url).get();
-
-        System.out.printf("\nSuccessfully scraped Reddit Page: %s", redditDiscussions.title());
-
-        Elements commentSection = redditDiscussions.getElementsByClass(DISCUSSION_TAG);
-        
-        for (Element comments : commentSection) {
-          String comment = comments.getElementsByClass(COMMENTS_TAG).text();
-          FullEntity redditComment =
-              Entity.newBuilder(keyFactory.newKey()).set("comment", comment).build();
-          datastore.put(redditComment);
+    while (stockMention.hasNext()) {
+      Entity entity = stockMention.next();
+      String stockSticker = entity.getString("stock");
+      listStickers.add(stockSticker);
+    }
+ 
+    for(int stickerIndex = 0; stickerIndex < listStickers.size(); stickerIndex++){
+    int count = 0;
+      if(!repeatedStickers.contains(listStickers.get(stickerIndex))){
+        for(int nextStickerIndex = stickerIndex ; nextStickerIndex < listStickers.size(); nextStickerIndex++){
+          if(listStickers.get(stickerIndex).equals(listStickers.get(nextStickerIndex))){
+            count++;
+            repeatedStickers.add(listStickers.get(stickerIndex));
+          }
         }
-      } catch (Exception e) {
-        System.out.printf("\n%s: Failed to load url: %s", getClass().getName(), url);
+      }
+      if(count != 0){
+        System.out.println("Sticker: " + listStickers.get(stickerIndex) + ", Count: " + count);
+        FullEntity stickerCount =
+        Entity.newBuilder(keyFactory.newKey())
+            .set("sticker", listStickers.get(stickerIndex))
+            .set("count", count)
+            .build();
+        datastore.put(stickerCount);
       }
     }
   }
