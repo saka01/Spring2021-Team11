@@ -49,6 +49,8 @@ function loadStocks() {
         stockListElement.appendChild(createStockElement(stock));
       });
     });
+
+  refreshComments();
 }
 
 function refresh() { 
@@ -65,7 +67,7 @@ function refresh() {
   });
 
   fetch('/sticker-count');
-  
+
   refreshComments();
 
 }
@@ -180,7 +182,6 @@ function BarChart() {
       chart.draw(data, options);
     }
 
-
 async function refreshComments() {
   const responseFromServer = await fetch('/refreshComment');
   const comment = await responseFromServer.json();
@@ -188,7 +189,6 @@ async function refreshComments() {
   const commentsContainer = document.getElementById('comments-container');
   commentsContainer.innerText = comment;
 }
-
 
 var i = 0;
 var txt = 'This is Bat$ Finance.';
@@ -201,4 +201,3 @@ function typeWriter() {
     setTimeout(typeWriter, speed);
   }
 }
-
