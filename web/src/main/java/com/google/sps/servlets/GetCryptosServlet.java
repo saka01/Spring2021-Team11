@@ -16,14 +16,17 @@ package com.google.sps.servlets;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
-import com.google.cloud.datastore.Entity;
-import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.sps.data.Cryptocurrency;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -33,18 +36,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 /** Servlet responsible for creating new tasks. */
-@WebServlet("/save-crypto")
-public class SaveCryptoServlet extends HttpServlet {
-
-  // The label for US Dollar Datastore Entity.
-  private static final String USD_LABEL = "USD";
-  // The label for the Name Datastore Entity.
-  private static final String NAME_LABEL = "Name";
-  // The label for the URL Datastore Entity.
-  private static final String CMC_URL_LABEL = "CoinMarketCapUrl";
+@WebServlet("/get-cryptos")
+public class GetCryptosServlet extends HttpServlet {
 
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // Scrapes Crypto Data from the coinmarketcap.com html.
     Document coinMarketDoc = Jsoup.connect("https://coinmarketcap.com/").get();
 
@@ -64,6 +60,7 @@ public class SaveCryptoServlet extends HttpServlet {
     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
     KeyFactory keyFactory = datastore.newKeyFactory().setKind("Cryptocurrency");
 
+    ArrayList<Cryptocurrency> cryptoList = new ArrayList<Cryptocurrency>();
     coinMarketCrypoDataArray.forEach(
         jsonObject -> {
           JsonObject coinJson = (JsonObject) jsonObject;
@@ -75,18 +72,23 @@ public class SaveCryptoServlet extends HttpServlet {
           // For our purposes, we only care about the USD price of the coin.
           JsonArray coinConversions = coinJson.getAsJsonArray("quotes");
           String usd = getUsdFromCoinConversions(coinConversions);
+          usd = roundUsd(usd);
 
-          Key coinEntityKey = keyFactory.newKey(symbol);
-          Entity coinEntity =
-              Entity.newBuilder(coinEntityKey)
-                  .set(NAME_LABEL, name)
-                  .set(USD_LABEL, usd)
-                  .set(CMC_URL_LABEL, cmcUrl)
+          Cryptocurrency crypto =
+              Cryptocurrency.newBuilder()
+                  .setName(name)
+                  .setSymbol(symbol)
+                  .setUsd(usd)
+                  .setCmcUrl(cmcUrl)
                   .build();
-          datastore.put(coinEntity);
-          System.out.println(
-              String.format("Datastore Updated Crypto: %s, %s, %s, %s", symbol, name, usd, cmcUrl));
+          cryptoList.add(crypto);
+          datastore.put(crypto.toDatastoreEntity(keyFactory));
+          System.out.println(String.format("Datastore Updated Crypto: %s", crypto.toString()));
         });
+
+    Gson gson = new Gson();
+    response.setContentType("application/json;");
+    response.getWriter().println(gson.toJson(cryptoList));
   }
 
   // Searches the list of coin conversions for USD and returns the price.
@@ -95,10 +97,17 @@ public class SaveCryptoServlet extends HttpServlet {
     for (int i = 0; i < coinConversions.size(); i++) {
       JsonObject conversionObject = coinConversions.get(i).getAsJsonObject();
       String name = conversionObject.get("name").getAsString();
-      if (name.equals(USD_LABEL)) {
+      if (name.equals("USD")) {
         return conversionObject.get("price").getAsString();
       }
     }
     return "";
+  }
+
+  // Rounds the USD to the nearest cent.
+  private static String roundUsd(String usd) {
+    BigDecimal bigDecimal = new BigDecimal(usd);
+    bigDecimal.setScale(1, RoundingMode.HALF_UP).setScale(2);
+    return bigDecimal.setScale(1, RoundingMode.HALF_UP).setScale(2).toString();
   }
 }
