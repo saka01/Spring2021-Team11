@@ -30,7 +30,9 @@ function searchMe() {
 }
 
 function loadGraph() {
-  fetch('/graph-data');
+  var location = window.location.href;
+  var symbol = location.split("=");
+  fetch('/graph-data?symbol=' + symbol[1]);
 }
 
 function loadStocks() {
@@ -76,31 +78,14 @@ google.charts.load('current', { packages: ['corechart', 'line'] });
 google.charts.setOnLoadCallback(drawChart);
 
 /** Creates a chart and adds it to the page. */
-function drawChart() {
+function drawChart(stocks) {
   // Feeds graph random data
-  function myRand(to) {
-    var x = Math.floor(Math.random() * to + 1);
-    return x;
-  }
-
-  var my2d = [];
-  for (var i = 0; i < 70; i++) {
-    my2d[i] = [];
-    for (var j = 0; j < 2; j++) {
-      my2d[i][j] = i;
-    }
-  }
-
-  for (var i = 0; i < 70; i++) {
-    my2d[i][1] = myRand(50);
-  }
-
   const data = new google.visualization.DataTable();
 
   data.addColumn('number', 'Time');
   data.addColumn('number', 'Price');
 
-  data.addRows(my2d);
+  data.addRows[stocks.price, 0];
 
   const options = {
     title: 'BTC',

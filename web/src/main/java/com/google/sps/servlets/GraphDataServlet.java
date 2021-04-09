@@ -5,8 +5,6 @@ import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
-import com.google.cloud.datastore.StructuredQuery.Filter;
-import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.gson.Gson;
 import com.google.sps.data.Stock;
@@ -24,13 +22,13 @@ public class GraphDataServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
+    String ticker = request.getParameter("symbol");
     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
     Query<Entity> query =
-    Query.newEntityQueryBuilder().setKind("Stock")
-    .setFilter(PropertyFilter.eq("Ticker", "ADA"))
-    .build();
-    QueryResults<Entity> results = datastore.run(query);
+        Query.newEntityQueryBuilder().setKind("Stock")
+        .setFilter(PropertyFilter.eq("Ticker", ticker))
+        .build();
+        QueryResults<Entity> results = datastore.run(query);
     
 
     List<Stock> stocks = new ArrayList<>();
