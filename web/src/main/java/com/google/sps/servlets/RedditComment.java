@@ -38,7 +38,7 @@ public class RedditComment extends HttpServlet {
   public static String COMMENTS_TAG = "_1qeIAgB0cPwnLhDF9XSiJM";
 
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
     Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
     Query<Entity> query =
@@ -68,7 +68,7 @@ public class RedditComment extends HttpServlet {
           datastore.put(redditComment);
         }
       } catch (Exception e) {
-        System.out.printf("%s: Failed to load url: %s", getClass().getName(), url);
+        System.out.printf("\n%s: Failed to load url: %s", getClass().getName(), url);
       }
     }
   }

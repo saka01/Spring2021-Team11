@@ -18,6 +18,7 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.FullEntity;
+import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,7 +56,6 @@ public class StickersWebScraping extends HttpServlet {
       Document docNyse = Jsoup.connect(stocksWebPage).get();
       Document docNasdaq = Jsoup.connect(nasdaqStocks).get();
 
-      // final String QUOTES_TAG = "quotes";
       Elements stocksNyse = docNyse.getElementsByClass(QUOTES_TAG);
       Elements stocksNasdaq = docNasdaq.getElementsByClass(QUOTES_TAG);
 
@@ -63,10 +63,13 @@ public class StickersWebScraping extends HttpServlet {
       addStickers(stocksNasdaq);
     }
     for (int i = 0; i < stockStickers.size(); i++) {
+    //   System.out.print(stockStickers.get(i) + " ");
+      Key stickerKey = datastore.newKeyFactory().setKind("Stock").newKey(stockStickers.get(i));
       FullEntity saveStickers =
-          Entity.newBuilder(keyFactory.newKey()).set("sticker", stockStickers.get(i)).build();
+          Entity.newBuilder(stickerKey).set("sticker", stockStickers.get(i)).build();
       datastore.put(saveStickers);
     }
+    response.sendRedirect("/index.html");
   }
 
   public void addStickers(Elements stocks) {

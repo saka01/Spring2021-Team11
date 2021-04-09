@@ -16,35 +16,37 @@ function searchMe() {
   input = document.getElementById('myInput');
   filter = input.value.toUpperCase();
   stockList = document.getElementById('stock-list');
-  stockListItem = stockList.getElementsByTagName('list');
+  stockListItem = stockList.getElementsByTagName('tr');
   for (var i = 0; i < stockListItem.length; i++) {
     item = stockListItem[i];
     txtValue = item.textContent || item.innerText;
     if (txtValue.toUpperCase().indexOf(filter) > -1) {
-      stockListItem[i].style.display = '';
+       stockListItem[i].style.display = '';
     } else {
       stockListItem[i].style.display = 'none';
     }
   }
 }
-       const data = [];
 
+const data = [];
 function loadGraph() {
    var location = window.location.href;
    var symbol = location.split("=");
    fetch('/graph-data?symbol=' + symbol[1])
    .then((response) => response.json())
    .then((stocks) => {
-       stocks.forEach((stock) => {
-           alert(stock.price);
-            data.push(stock.price);
-      });
+        for(var i in stocks)        
+            data.push([i, stocks[i]]);      
     });
   }
 
 function loadStocks() {
   // Activates the doPost request at every refresh and open of page
   fetch('/save-stock', {
+    method: 'POST',
+  });
+
+  fetch('/save-crypto', {
     method: 'POST',
   });
 
@@ -57,25 +59,70 @@ function loadStocks() {
         stockListElement.appendChild(createStockElement(stock));
       });
     });
+
+  refreshComments();
+}
+
+function refresh() { 
+  fetch('/store-comments-urls', {
+    method: 'POST',
+  });
+
+  fetch('/store-comments', {
+    method: 'POST',
+  });
+  
+  fetch('/reddit-count', {
+   method: 'POST',
+  });
+
+  fetch('/sticker-count');
+
+  refreshComments();
+
 }
 
 /** Creates an element that represents a stock */
+var count = 0;
 function createStockElement(stock) {
-  const stockElement = document.createElement('list');
-  stockElement.className = 'task';
 
-  const titleElement = document.createElement('span');
+  const stockElement = document.createElement('tr');
+
+  const titleElement = document.createElement('td');
   var ticker = stock.ticker;
+
+  
+  const tickName = document.createElement("a");
+  tickName.setAttribute('href', 'ticker.html?symbol=' + ticker);
+  tickName.className = 'tickName';
+  tickName.innerHTML = stock.tickName;
+
+  console.log(stock.tickName);
+    
+
 
   const tickLink = document.createElement('a');
   tickLink.setAttribute('href', 'ticker.html?symbol=' + ticker);
-  tickLink.setAttribute('name', ticker);
+  tickLink.className = 'tickLink';
   tickLink.innerHTML = ticker;
 
-  const priceElement = document.createElement('span');
-  priceElement.innerText = '$' + stock.price;
+  const counterElement = document.createElement('td');
+  counterElement.className = 'tickCount';
+  count = count + 1;
+  counterElement.innerHTML = count;
 
+  const priceElement = document.createElement('td');
+  priceElement.className = 'price-container';
+
+  const realPrice = document.createElement('a');  
+  realPrice.innerText = '$' + stock.price;
+  realPrice.className = 'tickPrice';
+
+
+  priceElement.appendChild(realPrice);
+  titleElement.appendChild(tickName);
   titleElement.appendChild(tickLink);
+  stockElement.appendChild(counterElement);
   stockElement.appendChild(titleElement);
   stockElement.appendChild(priceElement);
   return stockElement;
@@ -126,4 +173,59 @@ function drawChart() {
     document.getElementById('curve_chart')
   );
   chart.draw(data, options);
+}
+
+google.charts.load('current', {packages: ['corechart', 'bar']});
+google.charts.setOnLoadCallback(BarChart);
+
+function BarChart() {
+
+      var data = google.visualization.arrayToDataTable([
+        ['Stock', 'Mentions',],
+        ['Stock 1', 8175000],
+        ['Stock 2', 3792000],
+        ['Stock 3', 2695000],
+        ['Stock 4', 2099000],
+        ['Stock 5', 1526000]
+      ]);
+
+      var options = {
+        title: 'Reddit: wallstreetbets Stock Mentions',
+        chartArea: {width: '60%'},
+        width: 670,
+        height: 300,
+        backgroundColor: { fill:'transparent' },
+
+        hAxis: {
+          title: 'Mentions',
+          minValue: 0
+        },
+        vAxis: {
+          title: 'Stocks'
+        }
+      };
+
+      var chart = new google.visualization.BarChart(document.getElementById('bar_chart'));
+
+      chart.draw(data, options);
+    }
+
+async function refreshComments() {
+  const responseFromServer = await fetch('/refreshComment');
+  var stringComments = await responseFromServer.json();
+  const comments = stringComments.replaceAll('?','').replaceAll('|','\n')
+  const commentsContainer = document.getElementById('comments-container');
+  commentsContainer.innerText = comments;
+}
+
+var i = 0;
+var txt = 'This is Bat$ Finance.';
+var speed = 300;
+
+function typeWriter() {
+  if (i < txt.length) {
+    document.getElementById("title").innerHTML += txt.charAt(i);
+    i++;
+    setTimeout(typeWriter, speed);
+  }
 }
