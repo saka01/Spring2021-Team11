@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 function searchMe() {
   var input, filter, stockList, stockListItem, item, txtValue;
   input = document.getElementById('myInput');
@@ -28,12 +27,20 @@ function searchMe() {
     }
   }
 }
+       const data = [];
 
 function loadGraph() {
-  var location = window.location.href;
-  var symbol = location.split("=");
-  fetch('/graph-data?symbol=' + symbol[1]);
-}
+   var location = window.location.href;
+   var symbol = location.split("=");
+   fetch('/graph-data?symbol=' + symbol[1])
+   .then((response) => response.json())
+   .then((stocks) => {
+       stocks.forEach((stock) => {
+           alert(stock.price);
+            data.push(stock.price);
+      });
+    });
+  }
 
 function loadStocks() {
   // Activates the doPost request at every refresh and open of page
@@ -78,25 +85,33 @@ google.charts.load('current', { packages: ['corechart', 'line'] });
 google.charts.setOnLoadCallback(drawChart);
 
 /** Creates a chart and adds it to the page. */
-function drawChart(stocks) {
-  // Feeds graph random data
+function drawChart() { 
+
   const data = new google.visualization.DataTable();
 
   data.addColumn('number', 'Time');
   data.addColumn('number', 'Price');
 
-  data.addRows[stocks.price, 0];
+  data.addRow[data[0], data[0]];
+  data.addRow[100, 100];
+ 
+//   stocks.forEach((stock) => {
+//       alert(stock.price);
+//       data.addRow[stock.price, stock.price];
+//     });
+  
 
   const options = {
     title: 'BTC',
     width: 1500,
     height: 500,
-    lineWidth: 3,
+    lineWidth: 2,
+    backgroundColor: { fill:'transparent' },
 
     hAxis: {
       lable: 'Time',
       logScale: false,
-      gridlines: { count: 0 },
+      gridlines: { count: 1 },
     },
     vAxis: {
       lable: 'Price',

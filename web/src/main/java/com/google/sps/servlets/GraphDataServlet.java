@@ -41,7 +41,6 @@ public class GraphDataServlet extends HttpServlet {
 
       Stock stock = new Stock(id, tick, price);
       stocks.add(stock);
-      System.out.println("Tick: " + tick + " Price: " + price);
     }
     
     Gson gson = new Gson();
