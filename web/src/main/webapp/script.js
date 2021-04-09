@@ -97,7 +97,9 @@ function createStockElement(stock) {
   
     const tickName = document.createElement("a");
   tickName.setAttribute('href', 'ticker.html?symbol=' + ticker);
+
   tickName.className = 'tickName';
+
 
     for(var key in stockDict) {
     var stockName = stockDict[key];

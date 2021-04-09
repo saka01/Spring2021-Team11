@@ -110,10 +110,12 @@ a.tickLink{
     border-radius: 3px;
     padding: 2px;
 }
+
 td.tickPrice{
     font-family: 'Righteous', cursive;
     font-size: 14.5px;
 }
+
 
 ::-webkit-scrollbar {
     width: 0px;
