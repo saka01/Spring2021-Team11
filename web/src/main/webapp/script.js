@@ -28,15 +28,13 @@ function searchMe() {
   }
 }
 
-const data = [];
 function loadGraph() {
    var location = window.location.href;
    var symbol = location.split("=");
    fetch('/graph-data?symbol=' + symbol[1])
    .then((response) => response.json())
    .then((stocks) => {
-        for(var i in stocks)        
-            data.push([i, stocks[i]]);      
+      drawChart(stocks); 
     });
   }
 
@@ -129,24 +127,34 @@ function createStockElement(stock) {
 }
 
 google.charts.load('current', { packages: ['corechart', 'line'] });
-google.charts.setOnLoadCallback(drawChart);
+// google.charts.setOnLoadCallback(drawChart);
 
 /** Creates a chart and adds it to the page. */
-function drawChart() { 
+function drawChart(stockData) { 
+// Feeds graph random data
+  function myRand(to) {
+    var x = Math.floor(Math.random() * to + 1);
+    return x;
+  }
+
+  var my2d = [];
+  for (var i = 0; i < stockData.length; i++) {
+    my2d[i] = [];
+    for (var j = 0; j < 2; j++) {
+      my2d[i][j] = i;
+    }
+  }
+
+  for (var i = 0; i < stockData.length; i++) {
+    my2d[i][1] = stockData[i].price;
+  }
 
   const data = new google.visualization.DataTable();
 
   data.addColumn('number', 'Time');
   data.addColumn('number', 'Price');
 
-  data.addRow[data[0], data[0]];
-  data.addRow[100, 100];
- 
-//   stocks.forEach((stock) => {
-//       alert(stock.price);
-//       data.addRow[stock.price, stock.price];
-//     });
-  
+  data.addRows(my2d);
 
   const options = {
     title: 'BTC',
@@ -173,41 +181,6 @@ function drawChart() {
     document.getElementById('curve_chart')
   );
   chart.draw(data, options);
-}
-
-google.charts.load('current', {packages: ['corechart', 'bar']});
-google.charts.setOnLoadCallback(BarChart);
-
-function BarChart() {
-
-      var data = google.visualization.arrayToDataTable([
-        ['Stock', 'Mentions',],
-        ['Stock 1', 8175000],
-        ['Stock 2', 3792000],
-        ['Stock 3', 2695000],
-        ['Stock 4', 2099000],
-        ['Stock 5', 1526000]
-      ]);
-
-      var options = {
-        title: 'Reddit: wallstreetbets Stock Mentions',
-        chartArea: {width: '60%'},
-        width: 670,
-        height: 300,
-        backgroundColor: { fill:'transparent' },
-
-        hAxis: {
-          title: 'Mentions',
-          minValue: 0
-        },
-        vAxis: {
-          title: 'Stocks'
-        }
-      };
-
-      var chart = new google.visualization.BarChart(document.getElementById('bar_chart'));
-
-      chart.draw(data, options);
     }
 
 async function refreshComments() {
