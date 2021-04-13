@@ -37,7 +37,6 @@ function loadCryptoGraph() {
   fetch("/get-crypto-history?cmcId=" + cmcId)
     .then((response) => response.json())
     .then((history) => {
-      console.log(history);
       drawChart(history);
     });
 }
@@ -175,16 +174,11 @@ function createStockElement(stock) {
 
   const titleElement = document.createElement('td');
   var ticker = stock.ticker;
-
   
   const tickName = document.createElement("a");
   tickName.setAttribute('href', 'ticker.html?symbol=' + ticker);
   tickName.className = 'tickName';
   tickName.innerHTML = stock.tickName;
-
-  console.log(stock.tickName);
-    
-
 
   const tickLink = document.createElement('a');
   tickLink.setAttribute('href', 'ticker.html?symbol=' + ticker);
@@ -226,7 +220,6 @@ function drawChart(stockData) {
         var day = days.getDate();
         var month = days.getMonth() + 1;
         var year= days.getFullYear();
-        console.log(day.toString());
         my2d[i][j] = month + "/" + day + "/" + year;
 
     }
@@ -274,25 +267,21 @@ function drawChart(stockData) {
 }
 
 google.charts.load('current', {packages: ['corechart', 'bar']});
-google.charts.setOnLoadCallback(barChart);
-
-  
-  
 
 function barChart() {
-  var arrStocks = refreshBarChart();
+  fetch("/get-reddit-mentions")
+    .then((response) => response.json())
+    .then((stockCounts) => {
+      var stockCountArray = [['Stock', 'Mentions']];
+      stockCounts.forEach(element => {
+        const stock = element.ticker;
+        const count = element.count;
+        stockCountArray.push([stock, count]);
+      });
 
-  
-      var data = google.visualization.arrayToDataTable([
-        ['Stock', 'Mentions'],
-        ['Stock 1', 2695000],
-        ['Stock 2', 2695000],
-        ['Stock 3', 2695000],
-        ['Stock 4', 2099000],
-        ['Stock 5', 1526000]
-      ]);
+      const data = google.visualization.arrayToDataTable(stockCountArray);
 
-      var options = {
+      const options = {
         title: 'Reddit: wallstreetbets Stock Mentions',
         chartArea: {width: '60%'},
         width: 680,
@@ -306,12 +295,12 @@ function barChart() {
         vAxis: {
           title: 'Stocks'
         }
-      };
+      }
 
-      var chart = new google.visualization.BarChart(document.getElementById('bar_chart'));
-
+      const chart = new google.visualization.BarChart(document.getElementById('bar_chart'));
       chart.draw(data, options);
-    }
+    })
+  }
 
 async function userRefresh(){
 
@@ -332,9 +321,6 @@ async function refreshComments() {
   commentsContainer.innerText = comments;
 }
 
-async function refreshBarChart(){
-
-}
 var i = 0;
 var txt = 'This is Bat$ Finance';
 var speed = 300;
