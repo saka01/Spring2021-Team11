@@ -113,6 +113,47 @@ function createCryptoListElement(crypto) {
   return cryptoElement;
 }
 
+function displayCryptoList(cryptos) {
+  const cryptoListElement = document.getElementById("stock-list");
+  cryptos.forEach((crypto) => {
+    cryptoListElement.appendChild(createCryptoListElement(crypto));
+  });
+}
+
+function createCryptoListElement(crypto) {
+  const hrefLink = "ticker.html?cmcId=" + crypto.cmcId;
+  
+  const cryptoElement = document.createElement("tr");
+  cryptoElement.className = "cryptoRow";
+  const cryptoNameAndSymbolContainer = document.createElement("td");
+  cryptoNameAndSymbolContainer.className="cryptoNameAndSymbolContainer";
+
+  const cryptoName = document.createElement("a");
+  cryptoName.setAttribute("href", hrefLink);
+  cryptoName.className = "tickName cryptoName";
+  cryptoName.innerHTML = crypto.name;
+
+  const cryptoSymbol = document.createElement("a");
+  cryptoSymbol.setAttribute("href", hrefLink);
+  cryptoSymbol.className = "tickLink cryptoSymbol";
+  cryptoSymbol.innerHTML = crypto.symbol;
+
+  const rankElement = document.createElement("td");
+  rankElement.className = "tickPrice cryptoRank";
+  rankElement.innerHTML = crypto.cmcRank;
+
+  const priceElement = document.createElement("td");
+  priceElement.innerText = "$" + crypto.usd;
+  priceElement.className = "tickPrice cryptoPrice";
+
+  cryptoNameAndSymbolContainer.appendChild(cryptoName);
+  cryptoNameAndSymbolContainer.appendChild(cryptoSymbol);
+  cryptoElement.appendChild(rankElement);
+  cryptoElement.appendChild(cryptoNameAndSymbolContainer);
+  cryptoElement.appendChild(priceElement);
+  return cryptoElement;
+}
+
 function refresh() { 
   fetch('/store-comments-urls', {
     method: 'POST',
@@ -181,12 +222,13 @@ function drawChart(stockData) {
   for (var i = 0; i < stockData.data.quotes.length; i++) {
     my2d[i] = [];
     for (var j = 0; j < 2; j++) {
-      let currentTime = new Date();
-      let oldTime = new Date(stockData.data.quotes[i].quote.USD.timestamp);
+        var days = new Date(stockData.data.quotes[i].quote.USD.timestamp); // Days you want to subtract
+        var day = days.getDate();
+        var month = days.getMonth() + 1;
+        var year= days.getFullYear();
+        console.log(day.toString());
+        my2d[i][j] = month + "/" + day + "/" + year;
 
-      let days = (currentTime - oldTime) / (1000 * 60 * 60 * 24);
-
-       my2d[i][j] = days;
     }
   }
 
@@ -196,14 +238,17 @@ function drawChart(stockData) {
 
   const data = new google.visualization.DataTable();
 
-  data.addColumn('number', 'Days Past');
+
+  data.addColumn('string', 'Days Past');
+
   data.addColumn('number', 'Price');
 
   data.addRows(my2d);
 
   const options = {
     title: stockData.data.symbol,
-    width: 1500,
+    width: 1700,
+
     height: 500,
     lineWidth: 2,
     backgroundColor: { fill:'transparent' },
